@@ -9,6 +9,7 @@
   },
   "scripts": {
     "setup": "node scripts/download-sounds.js",
+    "generate-direct-urls": "node scripts/generate-direct-urls.js",
     "start": "cd systems/soundboard-app && npm run start",
     "build": "cd systems/soundboard-app && npm run build",
     "dist": "cd systems/soundboard-app && npm run dist"

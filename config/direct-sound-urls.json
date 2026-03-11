@@ -1,0 +1,4 @@
+{
+  "description": "Direct Freesound preview URLs so setup can install real sounds without FREESOUND_API_KEY. Generate this file by running: FREESOUND_API_KEY=yourkey node scripts/generate-direct-urls.js (get a key at https://freesound.org/apiv2/apply). Commit the generated file so all users get real sounds from setup.",
+  "sounds": {}
+}

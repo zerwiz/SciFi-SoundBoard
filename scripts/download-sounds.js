@@ -2,8 +2,9 @@
 /**
  * Download sci-fi sound pack (real Star Trek + Star Wars sounds) to the app's public/sounds folder.
  * 1) Tries GitHub Releases (sci-fi-sounds.zip).
- * 2) If no release: uses Freesound API when FREESOUND_API_KEY is set (downloads real sounds by ID).
- * Run: npm run setup (from repo root). Optional: FREESOUND_API_KEY for fallback downloads.
+ * 2) If no release: Freesound API when FREESOUND_API_KEY is set.
+ * 3) If still no sounds: config/direct-sound-urls.json (committed preview URLs, no key needed).
+ * Run: npm run setup (from repo root). To generate direct-sound-urls.json: node scripts/generate-direct-urls.js
  */
 const https = require('https');
 const fs = require('fs');
@@ -16,6 +17,7 @@ const [owner, repo] = config.repo.split('/');
 const ASSET_NAME = config.asset;
 const SOUNDS_DIR = path.join(__dirname, '..', config.soundsDir);
 const FREESOUND_IDS_PATH = path.join(__dirname, '..', 'config', 'freesound-ids.json');
+const DIRECT_URLS_PATH = path.join(__dirname, '..', 'config', 'direct-sound-urls.json');
 
 function fetch(url, opts = {}) {
   return new Promise((resolve, reject) => {
@@ -80,6 +82,27 @@ async function downloadFromFreesound() {
   return true;
 }
 
+async function downloadFromDirectUrls() {
+  if (!fs.existsSync(DIRECT_URLS_PATH)) return false;
+  const data = JSON.parse(fs.readFileSync(DIRECT_URLS_PATH, 'utf8'));
+  const urls = data.sounds;
+  if (!urls || typeof urls !== 'object' || Object.keys(urls).length === 0) return false;
+
+  console.log('Downloading real Star Trek & Star Wars sounds from direct URLs (config/direct-sound-urls.json)...');
+  let ok = 0;
+  for (const [appId, url] of Object.entries(urls)) {
+    try {
+      const dest = path.join(SOUNDS_DIR, appId + '.mp3');
+      await downloadFile(url, dest);
+      console.log('  ', appId + '.mp3');
+      ok++;
+    } catch (e) {
+      console.warn('  Skip', appId, e.message || e);
+    }
+  }
+  return ok > 0;
+}
+
 async function main() {
   console.log('Sci-Fi SoundBoard — Downloading sound pack (real Star Trek + Star Wars sounds)...');
   fs.mkdirSync(SOUNDS_DIR, { recursive: true });
@@ -90,7 +113,8 @@ async function main() {
     const data = await fetchJSON(`${apiBase}/releases/latest`);
     release = data;
   } catch (e) {
-    const used = await downloadFromFreesound();
+    let used = await downloadFromFreesound();
+    if (!used) used = await downloadFromDirectUrls();
     if (used) {
       console.log('Sounds installed to', SOUNDS_DIR);
       return;
@@ -98,19 +122,21 @@ async function main() {
     console.warn('No latest release found. To get real sounds:');
     console.warn('  1) Create a release with asset "' + ASSET_NAME + '" at https://github.com/' + config.repo + '/releases');
     console.warn('  2) Or set FREESOUND_API_KEY (get one at https://freesound.org/apiv2/apply) and run setup again.');
+    console.warn('  3) Or commit config/direct-sound-urls.json (run: node scripts/generate-direct-urls.js with your key).');
     console.warn('See docs/SOUND_SOURCES.md for manual download sources.');
     process.exit(1);
   }
 
   const asset = (release.assets || []).find((a) => a.name === ASSET_NAME);
   if (!asset || !asset.browser_download_url) {
-    const used = await downloadFromFreesound();
+    let used = await downloadFromFreesound();
+    if (!used) used = await downloadFromDirectUrls();
     if (used) {
       console.log('Sounds installed to', SOUNDS_DIR);
       return;
     }
     console.warn('Release "' + release.tag_name + '" has no asset "' + ASSET_NAME + '".');
-    console.warn('To get real sounds: add ' + ASSET_NAME + ' to the release, or set FREESOUND_API_KEY and run setup again.');
+    console.warn('To get real sounds: add ' + ASSET_NAME + ' to the release, or set FREESOUND_API_KEY, or use config/direct-sound-urls.json.');
     console.warn('See docs/SOUND_SOURCES.md for manual sources.');
     process.exit(1);
   }

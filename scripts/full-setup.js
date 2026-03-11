@@ -79,12 +79,14 @@ function main() {
 
   if (!hasRealSounds && !skipSoundsCheck) {
     console.error('');
-    console.error('[setup] Real Star Trek & Star Wars sounds were not installed.');
-    console.error('  • Use a release: create a GitHub Release with asset "sci-fi-sounds.zip" at:');
+    console.error('[setup] Real Star Trek & Star Wars sounds were not installed. Setup must install real sounds.');
+    console.error('  • Create a GitHub Release with asset "sci-fi-sounds.zip" at:');
     console.error('    https://github.com/zerwiz/SciFi-SoundBoard/releases');
     console.error('  • Or set FREESOUND_API_KEY (get a token at https://freesound.org/apiv2/apply) and run setup again.');
+    console.error('  • Or commit config/direct-sound-urls.json (run once: node scripts/generate-direct-urls.js with FREESOUND_API_KEY set).');
     console.error('  • See docs/SOUND_SOURCES.md and docs/SOUNDS_MANIFEST.md for manual sources.');
-    console.error('  • To run without real sounds (synth only): ./setup.sh --skip-sounds or set SKIP_SOUNDS=1');
+    console.error('  • To allow synth-only: setup.sh --skip-sounds or setup.bat --skip-sounds');
+    console.error('');
     process.exit(1);
   }
   if (!hasRealSounds && skipSoundsCheck) {

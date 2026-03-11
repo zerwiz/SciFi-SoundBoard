@@ -85,13 +85,14 @@ No release yet? Set `FREESOUND_API_KEY` (from [freesound.org/apiv2/apply](https:
 | **start.sh** | macOS, Linux | Starts the Electron app (run after setup). |
 | **start.bat** | Windows | Starts the Electron app. |
 
-Setup installs: root `node_modules`, `systems/soundboard-app/node_modules`, and **real Star Trek & Star Wars sound files** to `systems/soundboard-app/public/sounds/` from the latest GitHub Release (`sci-fi-sounds.zip`) or, when no release exists, from Freesound.org if `FREESOUND_API_KEY` is set. Requires Node.js 18+. Use `./setup.sh --skip-sounds` (or `SKIP_SOUNDS=1`) to complete setup with synthesized sounds only.
+Setup **must install real sounds**. It uses, in order: (1) latest GitHub Release asset `sci-fi-sounds.zip`, (2) Freesound.org API if `FREESOUND_API_KEY` is set, (3) committed `config/direct-sound-urls.json` if present. Requires Node.js 18+. Use `./setup.sh --skip-sounds` or `setup.bat --skip-sounds` to allow synth-only (optional).
 
 ## Scripts (npm)
 
 | Command | Description |
 |--------|-------------|
-| `npm run setup` | Download sound pack only (from latest GitHub Release) |
+| `npm run setup` | Download sound pack (Release, Freesound API, or config/direct-sound-urls.json) |
+| `npm run generate-direct-urls` | Generate `config/direct-sound-urls.json` from Freesound (set `FREESOUND_API_KEY` first) |
 | `npm start` | Run the Electron app |
 | `npm run build` | Build the React app (Vite) |
 | `npm run dist` | Build app and create installers (Linux + Windows) |
@@ -126,14 +127,17 @@ SciFi-SoundBoard/
 ├── README.md
 ├── package.json          # Root scripts + adm-zip for setup
 ├── config/
-│   └── sound-pack.json    # GitHub repo & asset name for sound pack
+│   ├── sound-pack.json    # GitHub repo & asset name for sound pack
+│   ├── freesound-ids.json  # App ID → Freesound ID (for API / generator)
+│   └── direct-sound-urls.json  # Optional: direct preview URLs (no API key needed)
 ├── docs/
 │   ├── PLANNING.md        # Roadmap, architecture, phases
 │   ├── SOUND_SOURCES.md   # Where to download each sound (links)
 │   └── SOUNDS_MANIFEST.md # Track sources & licenses
 ├── scripts/
 │   ├── full-setup.js     # Full setup: deps + sound pack (used by setup.sh / setup.bat)
-│   └── download-sounds.js# Fetches sci-fi-sounds.zip from Releases, extracts to app
+│   ├── download-sounds.js # Fetches sounds (Release, Freesound API, or direct-sound-urls)
+│   └── generate-direct-urls.js # One-time: generate direct-sound-urls.json (needs FREESOUND_API_KEY)
 └── systems/
     └── soundboard-app/    # Electron + React (Vite) app
         ├── electron/      # Main process
@@ -153,12 +157,19 @@ SciFi-SoundBoard/
 
 ## Adding the sound pack (maintainers)
 
-So that `./setup.sh` / `setup.bat` install real sounds for everyone:
+Setup must install real sounds. Use one of these so that `./setup.sh` / `setup.bat` install them for everyone:
 
-1. Collect the 20 sound files (see [SOUNDS_MANIFEST.md](docs/SOUNDS_MANIFEST.md)); name by ID (e.g. `blaster.mp3`, `red_alert.mp3`).
-2. Zip as **sci-fi-sounds.zip** (files at root of zip, no subfolder).
-3. [Create a new Release](https://github.com/zerwiz/SciFi-SoundBoard/releases/new) → tag e.g. `v1.0.0` → upload **sci-fi-sounds.zip** as an asset.
+**Option A — GitHub Release (recommended)**  
+1. Collect the 20 sound files (see [SOUNDS_MANIFEST.md](docs/SOUNDS_MANIFEST.md)); name by ID (e.g. `blaster.mp3`, `red_alert.mp3`).  
+2. Zip as **sci-fi-sounds.zip** (files at root of zip, no subfolder).  
+3. [Create a new Release](https://github.com/zerwiz/SciFi-SoundBoard/releases/new) → tag e.g. `v1.0.0` → upload **sci-fi-sounds.zip** as an asset.  
 4. New clones running `./setup.sh` or `setup.bat` will download and extract into `systems/soundboard-app/public/sounds/`.
+
+**Option B — Direct URLs (no release, no per-user API key)**  
+1. Get a [Freesound API key](https://freesound.org/apiv2/apply).  
+2. Run once: `FREESOUND_API_KEY=yourkey npm run generate-direct-urls` (macOS/Linux). On Windows: `set FREESOUND_API_KEY=yourkey` then `npm run generate-direct-urls`.  
+3. Commit the generated `config/direct-sound-urls.json`.  
+4. Setup will then install real sounds from those URLs for all users.
 
 ---
 
