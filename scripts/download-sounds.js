@@ -18,6 +18,18 @@ const ASSET_NAME = config.asset;
 const SOUNDS_DIR = path.join(__dirname, '..', config.soundsDir);
 const FREESOUND_IDS_PATH = path.join(__dirname, '..', 'config', 'freesound-ids.json');
 const DIRECT_URLS_PATH = path.join(__dirname, '..', 'config', 'direct-sound-urls.json');
+const FREESOUND_CREDENTIALS_PATH = path.join(__dirname, '..', 'config', 'freesound-credentials.json');
+
+function getFreesoundApiKey() {
+  const env = process.env.FREESOUND_API_KEY;
+  if (env && env.trim()) return env.trim();
+  if (fs.existsSync(FREESOUND_CREDENTIALS_PATH)) {
+    const cred = JSON.parse(fs.readFileSync(FREESOUND_CREDENTIALS_PATH, 'utf8'));
+    const key = cred.api_key || cred.token;
+    if (key && key.trim()) return key.trim();
+  }
+  return null;
+}
 
 function fetch(url, opts = {}) {
   return new Promise((resolve, reject) => {
@@ -59,8 +71,8 @@ function downloadFile(url, destPath) {
 }
 
 async function downloadFromFreesound() {
-  const key = process.env.FREESOUND_API_KEY;
-  if (!key || !key.trim()) return false;
+  const key = getFreesoundApiKey();
+  if (!key) return false;
   if (!fs.existsSync(FREESOUND_IDS_PATH)) return false;
   const ids = JSON.parse(fs.readFileSync(FREESOUND_IDS_PATH, 'utf8')).sounds;
   if (!ids || typeof ids !== 'object') return false;

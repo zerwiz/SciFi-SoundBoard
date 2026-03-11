@@ -10,9 +10,22 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const key = process.env.FREESOUND_API_KEY;
-if (!key || !key.trim()) {
-  console.error('Set FREESOUND_API_KEY (get one at https://freesound.org/apiv2/apply) and run again.');
+const CREDENTIALS_PATH = path.join(__dirname, '..', 'config', 'freesound-credentials.json');
+
+function getFreesoundApiKey() {
+  const env = process.env.FREESOUND_API_KEY;
+  if (env && env.trim()) return env.trim();
+  if (fs.existsSync(CREDENTIALS_PATH)) {
+    const cred = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf8'));
+    const key = cred.api_key || cred.token;
+    if (key && key.trim()) return key.trim();
+  }
+  return null;
+}
+
+const key = getFreesoundApiKey();
+if (!key) {
+  console.error('Set FREESOUND_API_KEY or add config/freesound-credentials.json with api_key (get one at https://freesound.org/apiv2/apply).');
   process.exit(1);
 }
 
