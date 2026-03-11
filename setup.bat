@@ -21,7 +21,7 @@ for /f "tokens=*" %%v in ('node -v 2^>nul') do set NODE_VER=%%v
 echo Node:   %NODE_VER%
 echo.
 
-node scripts\full-setup.js
+node scripts\full-setup.js %*
 if errorlevel 1 exit /b 1
 
 echo.

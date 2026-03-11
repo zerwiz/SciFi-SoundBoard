@@ -10,6 +10,9 @@ const fs = require('fs');
 
 const rootDir = path.join(__dirname, '..');
 const appDir = path.join(rootDir, 'systems', 'soundboard-app');
+const soundsDir = path.join(rootDir, 'systems', 'soundboard-app', 'public', 'sounds');
+
+const skipSoundsCheck = process.argv.includes('--skip-sounds') || process.env.SKIP_SOUNDS === '1';
 
 const platform = process.platform;   // 'win32' | 'darwin' | 'linux'
 const arch = process.arch;          // 'x64' | 'arm64' | 'ia32'
@@ -61,12 +64,33 @@ function main() {
   run(isWindows ? 'npm.cmd install' : 'npm install', { cwd: appDir });
   log('');
 
-  log('Downloading sound pack (from GitHub Releases)...');
+  log('Downloading real Star Trek & Star Wars sounds (GitHub Release or Freesound API)...');
   try {
-    run(isWindows ? 'node scripts\\download-sounds.js' : 'node scripts/download-sounds.js', { cwd: rootDir });
+    run(isWindows ? 'node scripts\\download-sounds.js' : 'node scripts/download-sounds.js', { cwd: rootDir, env: { ...process.env } });
   } catch (e) {
-    log('Sound pack download failed (no release yet?). App will use synthesized sounds.');
-    log('To add real sounds later: create a release with sci-fi-sounds.zip or see docs/SOUND_SOURCES.md');
+    log('Sound download failed (no release or network). Will check for existing files.');
+  }
+
+  const audioExtensions = ['.mp3', '.ogg', '.wav'];
+  const hasRealSounds = fs.existsSync(soundsDir) && fs.readdirSync(soundsDir).some((name) => {
+    const ext = path.extname(name).toLowerCase();
+    return audioExtensions.includes(ext);
+  });
+
+  if (!hasRealSounds && !skipSoundsCheck) {
+    console.error('');
+    console.error('[setup] Real Star Trek & Star Wars sounds were not installed.');
+    console.error('  • Use a release: create a GitHub Release with asset "sci-fi-sounds.zip" at:');
+    console.error('    https://github.com/zerwiz/SciFi-SoundBoard/releases');
+    console.error('  • Or set FREESOUND_API_KEY (get a token at https://freesound.org/apiv2/apply) and run setup again.');
+    console.error('  • See docs/SOUND_SOURCES.md and docs/SOUNDS_MANIFEST.md for manual sources.');
+    console.error('  • To run without real sounds (synth only): ./setup.sh --skip-sounds or set SKIP_SOUNDS=1');
+    process.exit(1);
+  }
+  if (!hasRealSounds && skipSoundsCheck) {
+    log('Skipping sound check (--skip-sounds). App will use synthesized sounds only.');
+  } else if (hasRealSounds) {
+    log('Real sounds installed successfully.');
   }
   log('');
 

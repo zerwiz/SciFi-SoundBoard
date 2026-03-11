@@ -21,4 +21,4 @@ NODE_VER=$(node -v)
 echo "Node:   $NODE_VER"
 echo ""
 
-node scripts/full-setup.js
+node scripts/full-setup.js "$@"

@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 /**
- * Download sci-fi sound pack to the app's public/sounds folder.
- * Uses GitHub Releases: https://github.com/zerwiz/SciFi-SoundBoard/releases
- * Run: npm run setup (from repo root)
+ * Download sci-fi sound pack (real Star Trek + Star Wars sounds) to the app's public/sounds folder.
+ * 1) Tries GitHub Releases (sci-fi-sounds.zip).
+ * 2) If no release: uses Freesound API when FREESOUND_API_KEY is set (downloads real sounds by ID).
+ * Run: npm run setup (from repo root). Optional: FREESOUND_API_KEY for fallback downloads.
  */
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { createWriteStream } = require('fs');
-const { get } = require('http');
 
 const CONFIG_PATH = path.join(__dirname, '..', 'config', 'sound-pack.json');
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 const [owner, repo] = config.repo.split('/');
 const ASSET_NAME = config.asset;
 const SOUNDS_DIR = path.join(__dirname, '..', config.soundsDir);
+const FREESOUND_IDS_PATH = path.join(__dirname, '..', 'config', 'freesound-ids.json');
 
 function fetch(url, opts = {}) {
   return new Promise((resolve, reject) => {
@@ -55,8 +56,32 @@ function downloadFile(url, destPath) {
   });
 }
 
+async function downloadFromFreesound() {
+  const key = process.env.FREESOUND_API_KEY;
+  if (!key || !key.trim()) return false;
+  if (!fs.existsSync(FREESOUND_IDS_PATH)) return false;
+  const ids = JSON.parse(fs.readFileSync(FREESOUND_IDS_PATH, 'utf8')).sounds;
+  if (!ids || typeof ids !== 'object') return false;
+
+  console.log('Downloading real Star Trek & Star Wars sounds from Freesound.org (API)...');
+  const apiBase = 'https://freesound.org/apiv2';
+  for (const [appId, freesoundId] of Object.entries(ids)) {
+    try {
+      const info = await fetchJSON(`${apiBase}/sounds/${freesoundId}/?token=${encodeURIComponent(key.trim())}`);
+      const url = info.previews && (info.previews['preview-hq-mp3'] || info.previews['preview-lq-mp3']);
+      if (!url) continue;
+      const dest = path.join(SOUNDS_DIR, appId + '.mp3');
+      await downloadFile(url, dest);
+      console.log('  ', appId + '.mp3');
+    } catch (e) {
+      console.warn('  Skip', appId, e.message || e);
+    }
+  }
+  return true;
+}
+
 async function main() {
-  console.log('Sci-Fi SoundBoard — Downloading sound pack...');
+  console.log('Sci-Fi SoundBoard — Downloading sound pack (real Star Trek + Star Wars sounds)...');
   fs.mkdirSync(SOUNDS_DIR, { recursive: true });
 
   const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
@@ -65,15 +90,28 @@ async function main() {
     const data = await fetchJSON(`${apiBase}/releases/latest`);
     release = data;
   } catch (e) {
-    console.warn('No latest release found. Create a release with asset "' + ASSET_NAME + '" at https://github.com/' + config.repo + '/releases');
-    console.warn('See docs/PLANNING.md and docs/SOUND_SOURCES.md for manual download sources.');
+    const used = await downloadFromFreesound();
+    if (used) {
+      console.log('Sounds installed to', SOUNDS_DIR);
+      return;
+    }
+    console.warn('No latest release found. To get real sounds:');
+    console.warn('  1) Create a release with asset "' + ASSET_NAME + '" at https://github.com/' + config.repo + '/releases');
+    console.warn('  2) Or set FREESOUND_API_KEY (get one at https://freesound.org/apiv2/apply) and run setup again.');
+    console.warn('See docs/SOUND_SOURCES.md for manual download sources.');
     process.exit(1);
   }
 
   const asset = (release.assets || []).find((a) => a.name === ASSET_NAME);
   if (!asset || !asset.browser_download_url) {
+    const used = await downloadFromFreesound();
+    if (used) {
+      console.log('Sounds installed to', SOUNDS_DIR);
+      return;
+    }
     console.warn('Release "' + release.tag_name + '" has no asset "' + ASSET_NAME + '".');
-    console.warn('Add ' + ASSET_NAME + ' to the release, or download sounds manually (see docs/SOUND_SOURCES.md).');
+    console.warn('To get real sounds: add ' + ASSET_NAME + ' to the release, or set FREESOUND_API_KEY and run setup again.');
+    console.warn('See docs/SOUND_SOURCES.md for manual sources.');
     process.exit(1);
   }
 

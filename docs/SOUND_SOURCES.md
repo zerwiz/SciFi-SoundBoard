@@ -2,6 +2,8 @@
 
 Curated list of **free, legal** sources for each soundboard sound. All links were verified as of March 2025. Check each license before use (CC0 = no attribution; CC-BY = attribution required; CC-BY-NC = non-commercial only).
 
+**Setup:** Running `./setup.sh` or `npm run setup` installs real Star Trek and Star Wars sounds by (1) downloading **sci-fi-sounds.zip** from GitHub Releases, or (2) when no release exists, downloading from **Freesound.org** if you set **FREESOUND_API_KEY** (get a token at [freesound.org/apiv2/apply](https://freesound.org/apiv2/apply)). The mapping of app sound IDs to Freesound IDs is in `config/freesound-ids.json`.
+
 ---
 
 ## Real Star Trek sounds (Starfleet panel)

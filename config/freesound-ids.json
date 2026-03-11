@@ -1,0 +1,19 @@
+{
+  "description": "Map app sound IDs to Freesound.org sound IDs. Used when FREESOUND_API_KEY is set and GitHub release has no sound pack. Real Star Trek and Star Wars sources — see SOUND_SOURCES.md.",
+  "sounds": {
+    "blaster": 466867,
+    "droid": 584917,
+    "tie_engine": 502610,
+    "vader": 553154,
+    "hyperdrive": 145589,
+    "force": 728524,
+    "deflector": 254378,
+    "phaser": 216909,
+    "communicator": 125710,
+    "red_alert": 350508,
+    "transporter": 675383,
+    "warp": 145589,
+    "door": 675374,
+    "computer": 218740
+  }
+}
