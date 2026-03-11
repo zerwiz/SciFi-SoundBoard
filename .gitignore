@@ -1,0 +1,19 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.env.local
+
+# Sound files (downloaded by setup; do not commit)
+systems/soundboard-app/public/sounds/*.mp3
+systems/soundboard-app/public/sounds/*.ogg
+systems/soundboard-app/public/sounds/*.wav
+systems/soundboard-app/public/sounds/*.zip
+!systems/soundboard-app/public/sounds/.gitkeep
+
+# Electron build output
+systems/soundboard-app/out/
+*.exe
+*.AppImage
+*.deb

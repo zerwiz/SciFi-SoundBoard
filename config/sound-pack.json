@@ -1,0 +1,11 @@
+{
+  "repo": "zerwiz/SciFi-SoundBoard",
+  "asset": "sci-fi-sounds.zip",
+  "soundsDir": "systems/soundboard-app/public/sounds",
+  "expectedIds": [
+    "blaster", "lightsaber", "droid", "tie_engine", "vader", "hyperdrive",
+    "seismic", "force", "thermal", "deflector", "phaser", "communicator",
+    "red_alert", "transporter", "warp", "tricorder", "door", "computer",
+    "torpedo", "hail"
+  ]
+}

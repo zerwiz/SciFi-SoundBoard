@@ -1,0 +1,22 @@
+{
+  "name": "scifi-soundboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sci-Fi SoundBoard — Electron app with real sound effects",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zerwiz/SciFi-SoundBoard.git"
+  },
+  "scripts": {
+    "setup": "node scripts/download-sounds.js",
+    "start": "cd systems/soundboard-app && npm run start",
+    "build": "cd systems/soundboard-app && npm run build",
+    "dist": "cd systems/soundboard-app && npm run dist"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.16"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
