@@ -386,7 +386,11 @@ export default function App() {
     setActiveSound(id);
     setTimeout(() => setActiveSound(null), 500);
 
-    const urls = EXTENSIONS.map((ext) => `/sounds/${id}.${ext}`);
+    const base = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL !== undefined
+      ? import.meta.env.BASE_URL
+      : './';
+    const baseSlash = base.endsWith('/') ? base : base + '/';
+    const urls = EXTENSIONS.map((ext) => `${baseSlash}sounds/${id}.${ext}`);
     let played = false;
 
     const tryPlay = (index) => {
@@ -432,27 +436,27 @@ export default function App() {
   const starWarsSounds = [
     { id: 'blaster', label: 'Blaster', icon: Crosshair },
     { id: 'lightsaber', label: 'Lightsaber', icon: Zap },
-    { id: 'droid', label: 'Astromech', icon: Cpu },
-    { id: 'tie_engine', label: 'TIE Engine', icon: Wind },
-    { id: 'vader', label: 'Respirator', icon: Activity },
+    { id: 'droid', label: 'Droid', icon: Cpu },
+    { id: 'tie_engine', label: 'TIE Fighter', icon: Wind },
+    { id: 'vader', label: 'Vader\'s Respirator', icon: Activity },
     { id: 'hyperdrive', label: 'Hyperdrive', icon: Rocket },
-    { id: 'seismic', label: 'Seismic', icon: Bomb },
+    { id: 'seismic', label: 'Seismic Charge', icon: Bomb },
     { id: 'force', label: 'The Force', icon: Power },
-    { id: 'thermal', label: 'Detonator', icon: AlertOctagon },
-    { id: 'deflector', label: 'Deflector', icon: Shield },
+    { id: 'thermal', label: 'Thermal Detonator', icon: AlertOctagon },
+    { id: 'deflector', label: 'Deflector Shield', icon: Shield },
   ];
 
   const starTrekSounds = [
     { id: 'phaser', label: 'Phaser', icon: Zap },
-    { id: 'communicator', label: 'Comms', icon: Radio },
+    { id: 'communicator', label: 'Communicator', icon: Radio },
     { id: 'red_alert', label: 'Red Alert', icon: AlertOctagon },
-    { id: 'transporter', label: 'Transport', icon: Activity },
-    { id: 'warp', label: 'Warp Core', icon: Rocket },
+    { id: 'transporter', label: 'Transporter', icon: Activity },
+    { id: 'warp', label: 'Warp Drive', icon: Rocket },
     { id: 'tricorder', label: 'Tricorder', icon: Wifi },
-    { id: 'door', label: 'Airlock', icon: Wind },
+    { id: 'door', label: 'Door', icon: Wind },
     { id: 'computer', label: 'Computer', icon: Database },
-    { id: 'torpedo', label: 'Torpedo', icon: Bomb },
-    { id: 'hail', label: 'Incoming', icon: Volume2 },
+    { id: 'torpedo', label: 'Photon Torpedo', icon: Bomb },
+    { id: 'hail', label: 'Hail', icon: Volume2 },
   ];
 
   return (
